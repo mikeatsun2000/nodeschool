@@ -1,7 +1,53 @@
 var http = require('http');
 var ps = require('process');
-var stringify = require('json-stringify-safe');
 
+
+var data = {};
+var ended = 0;
+
+
+for (var i = 0; i < ps.argv.length - 2; i++) {
+    data[ps.argv[i + 2]] = '';
+}
+
+for  (var i = 0; i < ps.argv.length - 2; i++) {
+    //console.log('setting response handler for ' + ps.argv[i + 2]);
+    http.get(ps.argv[i + 2], getResponseHandler(ps.argv[i + 2]));
+}
+
+function getResponseHandler(url) {
+   // console.log('in getResponseHandler -- url = ' + url);
+    function responseHandler(response) {
+        response.setEncoding('utf8');
+        
+        response.on('data', (d)=> {
+            var stringData = d.toString();
+            data[url] += stringData;
+            //console.log('reading from ' + url + 'data = ' + stringData);
+            //console.log('data[url] = ' + data[url]);
+        });
+
+
+        response.on('end', ()=> {
+            ended ++;
+            if (ended == ps.argv.length - 2) {
+                //console.log('gathering data');
+                for (var i = 0; i < ps.argv.length - 2; i++) {
+                    console.log(data[ps.argv[i + 2]]);
+                }
+            }
+        });
+         
+        response.on('error', (e) => {
+             console.log(`problem with request: ${e.message}`);
+        });
+    }
+
+    return responseHandler;
+}
+            
+           
+/*
 function ResponseArray()  {
     
     this.handlers = [];
@@ -81,4 +127,4 @@ console.log('***** array= ' + array + "*********");
 for  (var i = 0; i < ps.argv.length - 2; i++) {
     http.get(array.handlers[i].url, array.handlers[i].onResponse);
 }
-
+*/
