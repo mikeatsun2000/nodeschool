@@ -1,11 +1,11 @@
 var http = require('http');
 var ps = require('process');
+var stringify = require('json-stringify-safe');
 
 function ResponseArray()  {
+    
     this.handlers = [];
-    
-    
-    var completed = 0;
+    this.completed = 0;
     
     
     function add(handler) {
@@ -13,56 +13,54 @@ function ResponseArray()  {
     }
     
     function onComplete() {
-        completed++;this
-        console.log('****** completed = ' + completed + 
+        this.completed++;
+        console.log('****** completed = ' + this.completed + 
                     '****** length = ' + this.handlers.length);
-        if (completed ==this. handlers.length) {
-            console.log('***** gathering content *******' );
+        if (this.completed == this.handlers.length) {
+            console.log('***** gathering acc_data *******' );
             for (var i = 0; i <this. handlers.length ; i++ ) {
-                console.log(this.handlers[i].content);
+                console.log(this.handlers[i]['acc_data']);
             }
-            return;
         }
     }
     
     
     this.add = add;
-    this.onComplete = onComplete;
+    this.onComplete  = onComplete;
 }   
 
 function ResponseHandler(array, url ) {
     
-    var array = array;
-    var handlers = array.handlers
-    var index = handlers.length;
+    this["array"] = array;
+    this["url"] = url;
+    this["acc_data"] = "";
     
-    this.url = url;
-    this.content = '';
     
     
     
     function onResponse(response)  {
      
-       
         response.setEncoding('utf8');
         
         
         response.on('data', (data)=> {
-            console.log('****** handler for  ' + url + ' receiving data******');
-            console.log('***** data = ' + data.toString());
-            this.content += data.toString();
-            console.log('***** content = ' + this.content);
+            //console.log('****** handler for  ' + url + ' receiving data******');
+            var string_data = data.toString();
+            console.log('***** data = ' + string_data);
+            console.log('***** before ["acc_data"] = ' + this["acc_data"]);
+            this["acc_data"] = this["acc_data"] + string_data;
+            console.log('***** after ["acc_data" ] = '  + this["acc_data"]);
         });
-        
-        response.on('end', ()=>{
-            console.log('****** handler for  ' + url + ' finishing******');
-            console.log('****** status code =' + response.statusCode + '******');
+    
+        response.on('end', ()=> {
+            console.log('****** handler for  ' + this["url"] + ' finishing******');
+            console.log('****** status code = ' + response.statusCode + '******');
             array.onComplete();
         });
         
         response.on('error', (e) => {
-            console.log(`problem with request: ${e.message}`);
-});
+             console.log(`problem with request: ${e.message}`);
+        });
         
     }
     
@@ -71,7 +69,7 @@ function ResponseHandler(array, url ) {
 }
 
 var array = new ResponseArray();
-console.log(array);
+
 for (var i = 2; i < ps.argv.length; i++) {
     
     array.add(new ResponseHandler(array, ps.argv[i]));
