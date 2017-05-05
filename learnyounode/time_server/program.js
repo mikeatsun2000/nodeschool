@@ -8,13 +8,13 @@ var server = net.createServer(function (socket) {
 server.listen(Number(ps.argv[2]));
 
 function formattedDate() {
-    var template = '{1}-{2}-{3} {4}:{5}';
+
     var date = new Date(); 
-    return String.format(template, date.getFullYear(),
-                                            pad(date.getMonth() + 1),
-                                            pad(date.getDate()),
-                                            pad(date.getHours()),
-                                            pad(date.getMinutes()));
+    return date.getFullYear() +'-' +
+                pad(date.getMonth() + 1) + '-' +
+                pad(date.getDate()) + ' ' +
+                pad(date.getHours()) + ':' +
+                pad(date.getMinutes()) + '\n';
  }
  
  function pad(number) {
